@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Derechos y Obligaciones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: url("fondo.jpg"); /* Cambia esta URL */
+            background-size: cover;
+            background-position: center;
+            color: white; /* Color del texto general */
+        }
+        h1 {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Sombra para el título */
+        }
+        .result {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .final-results {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .dropzone {
+            width: 45%;
+            min-height: 150px;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto;
+            margin: 10px;
+            background-color: rgba(255, 255, 255, 0.5); /* Fondo blanco con transparencia */
+            color: black; /* Color del texto dentro de las celdas */
+        }
+        .dropzone h2 {
+            color: black; /* Color del encabezado dentro de las celdas */
+            margin: 0; /* Eliminar margen del encabezado */
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8); /* Sombra para los encabezados */
+        }
+        .item {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #fff; /* Cambia a blanco o a otro color que contraste */
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+            background-color: rgba(255, 255, 255, 0.8); /* Fondo de las frases con un poco de transparencia */
+            color: black; /* Color del texto en las frases */
+        }
+        footer {
+            margin-top: auto;
+            padding: 10px;
+            text-align: center;
+            font-size: 16px;
+            color: white; /* Color del texto en el pie de página */
+        }
+    </style>
+</head>
+<body>
+    <h1>Clasifica los Derechos y Obligaciones</h1>
+    <div class="result" id="result"></div>
+    <div class="container" id="game-container">
+        <div class="dropzone" id="derechos" ondrop="drop(event, 'derecho')" ondragover="allowDrop(event)">
+            <h2>Derechos</h2>
+        </div>
+        <div class="dropzone" id="obligaciones" ondrop="drop(event, 'obligacion')" ondragover="allowDrop(event)">
+            <h2>Obligaciones</h2>
+        </div>
+    </div>
+    <div id="phrases" class="container"></div>
+    <div id="final-results" class="final-results" style="display: none;"></div>
+
+    <script>
+        const phrases = [
+            { text: "Recibir el servicio educativo", type: "derecho" },
+            { text: "Tener acceso a las instalaciones", type: "derecho" },
+            { text: "Participar libremente en la sociedad de alumnos", type: "derecho" },
+            { text: "Obtener respuesta en tiempo y forma", type: "derecho" },
+            { text: "Expresar libremente sus ideas y opiniones", type: "derecho" },
+            { text: "Conducirse con respeto ante la comunidad del TecNM.", type: "obligacion" },
+            { text: "Conocer y cumplir el presente Reglamento", type: "obligacion" },
+            { text: "Asistir a las tutorías y asesorías que le sean asignadas", type: "obligacion" },
+            { text: "Atender las reglas de buena conducta, urbanidad y convivencia", type: "obligacion" },
+            { text: "Respetar, mantener y salvaguardar los bienes", type: "obligacion" }
+        ];
+
+        let correctCount = 0;
+        let incorrectCount = 0;
+        let dropCount = 0;
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.id);
+        }
+
+        function drop(event, expectedType) {
+            event.preventDefault();
+            const data = event.dataTransfer.getData("text");
+            const item = document.getElementById(data);
+            const actualType = phrases[parseInt(data.replace("phrase-", ""))].type;
+
+            // Contar respuestas
+            if (actualType === expectedType) {
+                correctCount++;
+                document.getElementById("result").innerHTML = `<span style="color: green;">¡Correcto!</span>`;
+            } else {
+                incorrectCount++;
+                document.getElementById("result").innerHTML = `<span style="color: red;">Incorrecto. Intenta de nuevo.</span>`;
+            }
+
+            // Añadir el elemento al dropzone correspondiente
+            event.target.appendChild(item);
+            dropCount++;
+
+            // Limpiar celdas cada 2 frases
+            if (dropCount % 2 === 0) {
+                clearDropzones();
+            }
+        }
+
+        function clearDropzones() {
+            const derechosZone = document.getElementById("derechos");
+            const obligacionesZone = document.getElementById("obligaciones");
+            derechosZone.innerHTML = "<h2>Derechos</h2>";
+            obligacionesZone.innerHTML = "<h2>Obligaciones</h2>";
+
+            // Mostrar resultados finales si se han clasificado todas las frases
+            if (dropCount === phrases.length) {
+                showFinalResults();
+            }
+        }
+
+        function showFinalResults() {
+            document.getElementById("game-container").style.display = "none"; // Ocultar las celdas
+            document.getElementById("phrases").style.display = "none"; // Ocultar frases
+            document.getElementById("final-results").style.display = "block"; // Mostrar resultados
+            document.getElementById("final-results").innerHTML = `Resultados finales: Correctas: ${correctCount}, Incorrectas: ${incorrectCount}`;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function initPhrases() {
+            shuffleArray(phrases); // Mezclar frases
+            const phrasesDiv = document.getElementById("phrases");
+            phrases.forEach((phrase, index) => {
+                const div = document.createElement("div");
+                div.id = `phrase-${index}`;
+                div.className = "item";
+                div.draggable = true;
+                div.ondragstart = drag;
+                div.innerText = phrase.text;
+                phrasesDiv.appendChild(div);
+            });
+        }
+
+        initPhrases();
+    </script>
+
+    <footer>
+        canapk
+    </footer>
+</body>
+</html>
